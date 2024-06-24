@@ -86,12 +86,14 @@ resource "aws_key_pair" "jenkins-ec2-key" {
     Name = "jenkins-ec2-key"
   }
 }
-
+locals {
+  ec2-ami = data.aws_ami.ami-ec2-jenkins.id
+}
 
 # 创建 EC2 实例
 resource "aws_instance" "jenkins" {
   key_name                    = aws_key_pair.jenkins-ec2-key.key_name
-  ami                         = "ami-0be48b687295f8bd6" # Ubuntu 22.04 AMI ID
+  ami                         = data.aws_ami.ami-ec2-jenkins # Ubuntu 22.04 AMI ID
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.sn_jenkins.id
   security_groups             = [aws_security_group.sg_jenkins.id]
