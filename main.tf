@@ -94,7 +94,28 @@ locals {
   ami_id = module.ami_ubuntu_22_04_latest.ami.id
 }
 # 创建 EC2 实例
-resource "aws_instance" "jenkins" {
+resource "aws_instance" "jenkins-prod" {
+  count                       = terraform.workspace == "prod" ? 1 : 0
+  key_name                    = aws_key_pair.jenkins-ec2-key.key_name
+  ami                         = local.ami_id # Ubuntu 22.04 AMI ID
+  instance_type               = "t2.nano"
+  subnet_id                   = aws_subnet.sn_jenkins.id
+  security_groups             = [aws_security_group.sg_jenkins.id]
+  associate_public_ip_address = true
+
+  user_data = <<-EOF
+              #!/bin/bash
+              apt update && apt -y upgrade
+              curl -sSL https://get.docker.com | bash
+              EOF
+
+  tags = {
+    Name = "jenkins-ec2-${terraform.workspace}"
+  }
+
+}
+# 创建 EC2 实例
+resource "aws_instance" "jenkins-dev" {
   count                       = terraform.workspace == "dev" ? 1 : 0
   key_name                    = aws_key_pair.jenkins-ec2-key.key_name
   ami                         = local.ami_id # Ubuntu 22.04 AMI ID
@@ -110,7 +131,7 @@ resource "aws_instance" "jenkins" {
               EOF
 
   tags = {
-    Name = "jenkins-ec2"
+    Name = "jenkins-ec2-${terraform.workspace}"
   }
 
 }
