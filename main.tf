@@ -86,14 +86,18 @@ resource "aws_key_pair" "jenkins-ec2-key" {
     Name = "jenkins-ec2-key"
   }
 }
-locals {
-  ec2-ami = data.aws_ami.ami-ec2-jenkins.id
+module "ami_ubuntu_22_04_latest" {
+  source = "github.com/andreswebs/terraform-aws-ami-ubuntu"
 }
 
+locals {
+  ami_id = module.ami_ubuntu_22_04_latest.ami.id
+}
 # 创建 EC2 实例
 resource "aws_instance" "jenkins" {
+  count                       = terraform.workspace == "dev" ? 1 : 0
   key_name                    = aws_key_pair.jenkins-ec2-key.key_name
-  ami                         = data.aws_ami.ami-ec2-jenkins # Ubuntu 22.04 AMI ID
+  ami                         = local.ami_id # Ubuntu 22.04 AMI ID
   instance_type               = "t2.micro"
   subnet_id                   = aws_subnet.sn_jenkins.id
   security_groups             = [aws_security_group.sg_jenkins.id]

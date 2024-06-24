@@ -37,9 +37,6 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-# provider terraform file
-
-provider.*
 
 
 #terraform.tfstate
